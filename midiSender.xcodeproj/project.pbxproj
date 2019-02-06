@@ -12,9 +12,13 @@
 		8CA9A0EA2201A940003D7130 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8CA9A0E82201A940003D7130 /* Main.storyboard */; };
 		8CA9A0EC2201A941003D7130 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8CA9A0EB2201A941003D7130 /* Assets.xcassets */; };
 		8CA9A0EF2201A941003D7130 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8CA9A0ED2201A941003D7130 /* LaunchScreen.storyboard */; };
+		8CAB17662205842900A527AF /* Midi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CAB17652205842900A527AF /* Midi.swift */; };
+		8CF405A922073A160071413F /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF405A822073A160071413F /* Sampler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8C5F12582201F5F900FAEC4B /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		8C5F125A2201F5F900FAEC4B /* midiSender.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = midiSender.entitlements; sourceTree = "<group>"; };
 		8CA9A0E12201A940003D7130 /* midiSender.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = midiSender.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CA9A0E42201A940003D7130 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8CA9A0E62201A940003D7130 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -22,6 +26,9 @@
 		8CA9A0EB2201A941003D7130 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8CA9A0EE2201A941003D7130 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8CA9A0F02201A941003D7130 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8CAB17652205842900A527AF /* Midi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Midi.swift; sourceTree = "<group>"; };
+		8CF405A822073A160071413F /* Sampler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sampler.swift; sourceTree = "<group>"; };
+		8CF405AA22073E660071413F /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,11 +42,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8C5F12572201F5F900FAEC4B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8CF405AA22073E660071413F /* CoreMIDI.framework */,
+				8C5F12582201F5F900FAEC4B /* AudioToolbox.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		8CA9A0D82201A940003D7130 = {
 			isa = PBXGroup;
 			children = (
 				8CA9A0E32201A940003D7130 /* midiSender */,
 				8CA9A0E22201A940003D7130 /* Products */,
+				8C5F12572201F5F900FAEC4B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,8 +71,11 @@
 		8CA9A0E32201A940003D7130 /* midiSender */ = {
 			isa = PBXGroup;
 			children = (
+				8C5F125A2201F5F900FAEC4B /* midiSender.entitlements */,
 				8CA9A0E42201A940003D7130 /* AppDelegate.swift */,
 				8CA9A0E62201A940003D7130 /* ViewController.swift */,
+				8CF405A822073A160071413F /* Sampler.swift */,
+				8CAB17652205842900A527AF /* Midi.swift */,
 				8CA9A0E82201A940003D7130 /* Main.storyboard */,
 				8CA9A0EB2201A941003D7130 /* Assets.xcassets */,
 				8CA9A0ED2201A941003D7130 /* LaunchScreen.storyboard */,
@@ -96,6 +116,14 @@
 				TargetAttributes = {
 					8CA9A0E02201A940003D7130 = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.InterAppAudio = {
+								enabled = 0;
+							};
+						};
 					};
 				};
 			};
@@ -136,6 +164,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8CA9A0E72201A940003D7130 /* ViewController.swift in Sources */,
+				8CAB17662205842900A527AF /* Midi.swift in Sources */,
+				8CF405A922073A160071413F /* Sampler.swift in Sources */,
 				8CA9A0E52201A940003D7130 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
