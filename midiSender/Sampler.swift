@@ -71,6 +71,6 @@ class Sampler: NSObject {
         }
     }
     func MIDISend(channel: UInt8, note: UInt8, velocity: UInt8, destination: UInt32, timestamp: UInt64) {
-        print("dest:\(destination), time:\(timestamp), ch:\(channel), note:\(note), vel:\(velocity)")
+        //print("dest:\(destination), time:\(timestamp), ch:\(channel), note:\(note), vel:\(velocity)")
     }
 }

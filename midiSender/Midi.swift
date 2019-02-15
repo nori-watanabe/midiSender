@@ -19,9 +19,10 @@ class Midi: NSObject {
     var midiOutputPort = MIDIPortRef()
     var currentMidiDestinationEndpoint = MIDIEndpointRef()
     var destinationEndpoints: [DestinationEndpoint] = []
+    var sourceEndpoint = MIDIEndpointRef()
     var isPlaying: Bool = false
-    var maxNote: UInt8 = 100
-    var minNote: UInt8 = 60
+    let maxNote: UInt8 = 100
+    let minNote: UInt8 = 60
     var currentNote: UInt8 = 60
     var timer: Timer = Timer.init()
     var delegate: MidiDelegate!
@@ -38,26 +39,45 @@ class Midi: NSObject {
     override init() {
         var err: OSStatus = 0
 
+        let notifyMidiClient: MIDINotifyProc = {
+            (notification: UnsafePointer<MIDINotification>, refcon: UnsafeMutableRawPointer?) in
+            
+            // can not use delegation -> Notification
+            NotificationCenter.default.post(
+                name: Notification.Name(rawValue: "updateDestinationDeviceStatus"),
+                object: nil
+            )
+
+            print("midiSender notifyMidiClient \(notification) refcon \(String(describing: refcon))")
+        }
+
         err = MIDIClientCreate(
-            "MIDIClientCreate" as CFString,
-            nil,
+            "MIDISenderClient" as CFString,
+            notifyMidiClient,
             nil,
             &midiClient
         )
         if (err != 0) {
-            print("[err]MIDIClientCreate \(err)")
+            print("midiSender MIDIClientCreate \(err)")
             return
         }
 
         err = MIDIOutputPortCreate(
             midiClient,
-            "MIDIOutputPortCreate" as CFString,
+            "MIDISenderOutputPort" as CFString,
             &midiOutputPort
         )
         if err != 0 {
-            print("[err]MIDIOutputPortCreate \(err)")
+            print("midiSender MIDIOutputPortCreate \(err)")
             return
         }
+        
+        err = MIDISourceCreate(midiClient, "MIDISenderSourceEndpoint" as CFString, &sourceEndpoint)
+        if err != 0 {
+            print("midiSender MIDISourceCreate \(err)")
+            return
+        }
+
     }
     deinit {
         dispose()
@@ -67,7 +87,7 @@ class Midi: NSObject {
         // network
         
         let networkid = MIDINetworkSession.default().destinationEndpoint()
-        let networkname = midiPropertyDisplayName(networkid)! as String
+        let networkname = midiPropertyDisplayName(endpoint: networkid)
         let newworkEndpoint = DestinationEndpoint()
         newworkEndpoint.id = networkid
         newworkEndpoint.name = networkname
@@ -79,7 +99,7 @@ class Midi: NSObject {
         for ld in 0..<endpointCount {
             let endpointRef = MIDIGetDestination(ld)
             if endpointRef != networkid {
-                let name = midiPropertyDisplayName(endpointRef)! as String
+                let name = midiPropertyDisplayName(endpoint: endpointRef)
                 let deviceEndpoint = DestinationEndpoint()
                 deviceEndpoint.id = endpointRef
                 deviceEndpoint.name = name
@@ -95,22 +115,30 @@ class Midi: NSObject {
         
         err = MIDIPortDispose(midiOutputPort)
         if err != 0 {
-            print("[err]MIDIPortDispose \(err)")
+            print("midiSender MIDIPortDispose \(err)")
         }
         
         err = MIDIClientDispose(midiClient)
         if err != 0 {
-            print("[err]MIDIClientDispose \(err)")
+            print("midiSender MIDIClientDispose \(err)")
         }
+    }
+    func isSeningContinues() -> Bool {
+        for destination in destinationEndpoints {
+            if currentMidiDestinationEndpoint == destination.id {
+                return true
+            }
+        }
+        return false
     }
     func sendBegan() {
         let duration: Double = 60 / 85 * 0.25
-            
+
         self.timer = Timer.scheduledTimer(timeInterval: duration, target: self, selector: #selector(self.timerFired), userInfo: nil, repeats: true)
         self.timerFired()
     }
     func sendEnd() {
-            self.timer.invalidate()
+        self.timer.invalidate()
     }
     @objc func timerFired() {
         
@@ -166,21 +194,25 @@ class Midi: NSObject {
         }
 
         // packetList send
-
         err = MIDISend(
             midiOutputPort,
             currentMidiDestinationEndpoint,
             packetList
         )
         if err != 0 {
-            print("[err]MIDISend \(err)")
+            print("midiSender MIDISend \(err)")
         }
+
+        packetList.deallocate()
     }
-    fileprivate func midiPropertyDisplayName(_ object: MIDIObjectRef) -> NSString? {
-        var name: Unmanaged<CFString>? = nil
-        if (0 != MIDIObjectGetStringProperty(object, kMIDIPropertyDisplayName, &name) ){
-            return nil
+    fileprivate func midiPropertyDisplayName(endpoint: MIDIObjectRef) -> String {
+        var param: Unmanaged<CFString>? = nil
+        var name: String = "--"
+        
+        let err: OSStatus = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyDisplayName, &param)
+        if err == 0 {
+            name =  param!.takeRetainedValue() as String
         }
-        return name?.takeUnretainedValue() as NSString?
+        return name
     }
 }

@@ -9,18 +9,27 @@
 import UIKit
 
 class ViewController: UIViewController, MidiDelegate {
-
+    
     let midi = Midi()
     let sampler = Sampler()
-    var logLabel: UILabel!
+    var logTextView: UITextView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         midi.delegate = self
+        setNotificationObserver()
         setControllButton()
         scan()
     }
+    func setNotificationObserver() {
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(actionUpdateDestinationDeviceStatus), name: NSNotification.Name(rawValue: "updateDestinationDeviceStatus"), object: nil)
+    }
     @objc func actionSelectDestination(sender: UIButton) {
+        if midi.isPlaying == true && sender.backgroundColor == UIColor.darkGray {
+            return
+        }
+
         midi.isPlaying = !midi.isPlaying
         if midi.isPlaying == true {
             midi.currentMidiDestinationEndpoint = midi.destinationEndpoints[sender.tag].id
@@ -30,37 +39,62 @@ class ViewController: UIViewController, MidiDelegate {
         else {
             midi.sendEnd()
             sender.backgroundColor = UIColor.darkGray
+            midi.currentMidiDestinationEndpoint = 0
         }
     }
     @objc func actionRescan(sender: UIButton) {
+        logTextView.text = ""
+        scan()
+    }
+    @objc func actionUpdateDestinationDeviceStatus() {
         scan()
     }
     func scan() {
-        midi.sendEnd()
+        
         midi.destinationEndpoints = []
         midi.scanDestinationEndpoint()
-        midi.isPlaying = false
 
-        setDestinationButtonItems()
-        logLabel.text = ""
+        var tag: UInt32 = 0
+        if midi.isSeningContinues() == false {
+            midi.sendEnd()
+            midi.isPlaying = false
+        }
+        else {
+            tag = midi.currentMidiDestinationEndpoint
+        }
+        setDestinationButtonItems(activeEndpoint: tag)
     }
     func setControllButton() {
         let rescanButton = UICornerButton(frame: CGRect(x: 10, y: 44, width: 60, height: 40))
-        rescanButton.setTitle("rescan", for: .normal)
         rescanButton.tag = -1
+        rescanButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
         rescanButton.backgroundColor = UIColor.black
         rescanButton.setTitleColor(UIColor.white, for: .normal)
+        rescanButton.setTitle("reset", for: .normal)
         rescanButton.addTarget(self, action: #selector(actionRescan), for: .touchUpInside)
         self.view.addSubview(rescanButton)
         
-        logLabel = UILabel(frame: CGRect(x: 80, y: 44, width: self.view.frame.width - 90, height: 40))
-        logLabel.textAlignment = .left
-        logLabel.font = UIFont.systemFont(ofSize: 12)
-        self.view.addSubview(logLabel)
+        let deviceInfoLabel = UILabel(frame: CGRect(x: 75, y: 44, width: self.view.frame.width - 75, height: 40))
+        deviceInfoLabel.tag = -2
+        deviceInfoLabel.numberOfLines = 2
+        deviceInfoLabel.textAlignment = .left
+        deviceInfoLabel.font = UIFont.systemFont(ofSize: 12)
+        deviceInfoLabel.text = "midiSender midiClient: \(midi.midiClient.description)\noutputPort: \(midi.midiOutputPort), sourceEndpoint: \(midi.sourceEndpoint.description)"
+        self.view.addSubview(deviceInfoLabel)
+        
+        logTextView = UITextView(frame: CGRect(x: 10, y: 90, width: self.view.frame.width - 20, height: 150))
+        logTextView.font = UIFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
+        logTextView.isEditable = false
+        logTextView.layer.cornerRadius = 5
+        logTextView.layer.masksToBounds = true
+        logTextView.textColor = UIColor.white
+        logTextView.tag = -3
+        logTextView.backgroundColor = UIColor.black
+        self.view.addSubview(logTextView)
     }
-    func setDestinationButtonItems() {
+    func setDestinationButtonItems(activeEndpoint: UInt32) {
         for view in self.view.subviews {
-            if view.tag > 0 {
+            if view.tag >= 0 {
                 view.removeFromSuperview()
             }
         }
@@ -68,22 +102,43 @@ class ViewController: UIViewController, MidiDelegate {
         var i = 0
         for obj in midi.destinationEndpoints {
 
-            let button = UICornerButton(frame: CGRect(x: 10, y: 100 + CGFloat(i * 44), width: self.view.frame.width - 20, height: 40))
+            let button = UICornerButton(frame: CGRect(x: 10, y: 260 + CGFloat(i * 44), width: self.view.frame.width - 20, height: 40))
             button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
             button.setTitle(obj.name + "(\(obj.id))", for: .normal)
             button.tag = i
             button.backgroundColor = UIColor.darkGray
             button.setTitleColor(UIColor.white, for: .normal)
             button.addTarget(self, action: #selector(actionSelectDestination), for: .touchUpInside)
+            
+            if obj.id == activeEndpoint {
+                button.backgroundColor = UIColor.red
+            }
+            
             self.view.addSubview(button)
             
             i += 1
         }
     }
     func loggingMIDISend(channel: UInt8, note: UInt8, velocity: UInt8, destination: UInt32, timestamp: UInt64) {
-        //display
-        logLabel.text = "dest:\(destination), ch:\(channel), note:\(note), vel:\(velocity)"
-        // sampler
+
+        // log display and rotation
+
+        let newLine = "dest: \(destination), time \(timestamp), ch: \(channel+1), note: \(note), vel: \(velocity)"
+
+        let oldlines = logTextView.text.components(separatedBy: CharacterSet(charactersIn: "\n"))
+
+        var logs: [String] = []
+        logs.append(newLine)
+        for line in oldlines {
+            logs.append(line)
+            if logs.count > 20 {
+                break
+            }
+        }
+        logTextView.text = logs.joined(separator: "\n")
+
+        // to sampler
+
         sampler.MIDISend(channel: channel, note: note, velocity: velocity, destination: destination, timestamp: timestamp)
     }
 }

@@ -72,14 +72,14 @@
 			isa = PBXGroup;
 			children = (
 				8C5F125A2201F5F900FAEC4B /* midiSender.entitlements */,
+				8CA9A0F02201A941003D7130 /* Info.plist */,
+				8CA9A0E82201A940003D7130 /* Main.storyboard */,
+				8CA9A0ED2201A941003D7130 /* LaunchScreen.storyboard */,
+				8CA9A0EB2201A941003D7130 /* Assets.xcassets */,
 				8CA9A0E42201A940003D7130 /* AppDelegate.swift */,
 				8CA9A0E62201A940003D7130 /* ViewController.swift */,
 				8CF405A822073A160071413F /* Sampler.swift */,
 				8CAB17652205842900A527AF /* Midi.swift */,
-				8CA9A0E82201A940003D7130 /* Main.storyboard */,
-				8CA9A0EB2201A941003D7130 /* Assets.xcassets */,
-				8CA9A0ED2201A941003D7130 /* LaunchScreen.storyboard */,
-				8CA9A0F02201A941003D7130 /* Info.plist */,
 			);
 			path = midiSender;
 			sourceTree = "<group>";
