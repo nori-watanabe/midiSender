@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  midiSender
 //
-//  Created by mbp on 2019/02/05.
+//  Created by mbp on 2019/02/27.
 //  Copyright © 2019 mbp. All rights reserved.
 //
 
@@ -11,7 +11,6 @@ import UIKit
 class ViewController: UIViewController, MidiDelegate {
     
     let midi = Midi()
-    let sampler = Sampler()
     var logTextView: UITextView!
 
     override func viewDidLoad() {
@@ -50,7 +49,6 @@ class ViewController: UIViewController, MidiDelegate {
         scan()
     }
     func scan() {
-        
         midi.destinationEndpoints = []
         midi.scanDestinationEndpoint()
 
@@ -119,16 +117,10 @@ class ViewController: UIViewController, MidiDelegate {
             i += 1
         }
     }
-    func loggingMIDISend(channel: UInt8, note: UInt8, velocity: UInt8, destination: UInt32, timestamp: UInt64) {
-
-        // log display and rotation
-
-        let newLine = "dest: \(destination), time \(timestamp), ch: \(channel+1), note: \(note), vel: \(velocity)"
-
+    func loggingMIDISend(log: String) {
         let oldlines = logTextView.text.components(separatedBy: CharacterSet(charactersIn: "\n"))
-
         var logs: [String] = []
-        logs.append(newLine)
+        logs.append(log)
         for line in oldlines {
             logs.append(line)
             if logs.count > 20 {
@@ -136,10 +128,6 @@ class ViewController: UIViewController, MidiDelegate {
             }
         }
         logTextView.text = logs.joined(separator: "\n")
-
-        // to sampler
-
-        sampler.MIDISend(channel: channel, note: note, velocity: velocity, destination: destination, timestamp: timestamp)
     }
 }
 

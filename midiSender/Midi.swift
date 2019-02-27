@@ -2,7 +2,7 @@
 //  Midi.swift
 //  midiSender
 //
-//  Created by mbp on 2019/02/05.
+//  Created by mbp on 2019/02/27.
 //  Copyright © 2019 mbp. All rights reserved.
 //
 
@@ -10,11 +10,12 @@ import Foundation
 import CoreMIDI
 
 @objc protocol MidiDelegate {
-    func loggingMIDISend(channel: UInt8, note: UInt8, velocity: UInt8, destination: UInt32, timestamp: UInt64)
+    func loggingMIDISend(log: String)
 }
 
 class Midi: NSObject {
 
+    let sampler = Sampler()
     var midiClient = MIDIClientRef()
     var midiOutputPort = MIDIPortRef()
     var currentMidiDestinationEndpoint = MIDIEndpointRef()
@@ -41,8 +42,7 @@ class Midi: NSObject {
 
         let notifyMidiClient: MIDINotifyProc = {
             (notification: UnsafePointer<MIDINotification>, refcon: UnsafeMutableRawPointer?) in
-            
-            // can not use delegation -> Notification
+
             NotificationCenter.default.post(
                 name: Notification.Name(rawValue: "updateDestinationDeviceStatus"),
                 object: nil
@@ -84,7 +84,7 @@ class Midi: NSObject {
     }
     func scanDestinationEndpoint() {
         
-        // network
+        // network session
         
         let networkid = MIDINetworkSession.default().destinationEndpoint()
         let networkname = midiPropertyDisplayName(endpoint: networkid)
@@ -169,13 +169,13 @@ class Midi: NSObject {
         let bufferSize: Int = 1024 // byte size
         let packetList = UnsafeMutablePointer<MIDIPacketList>.allocate(capacity: bufferSize)
 
+        // packet initialize
+        var packet = UnsafeMutablePointer<MIDIPacket>.allocate(capacity: 1)
+        packet = MIDIPacketListInit(packetList)
+        
         for note in noteData {
 
             let timestamp: MIDITimeStamp = mach_absolute_time()
-
-            // packet initialize
-            var packet = UnsafeMutablePointer<MIDIPacket>.allocate(capacity: 1)
-            packet = MIDIPacketListInit(packetList)
             
             // channel, note, velocity
             let packetData: [UInt8] = [0x90 + channel, note.key, note.vel]
@@ -190,7 +190,12 @@ class Midi: NSObject {
                 packetData
             )
 
-            self.delegate.loggingMIDISend(channel: channel, note: note.key, velocity: note.vel, destination: currentMidiDestinationEndpoint, timestamp: timestamp)
+            // sampler
+            sampler.MIDISend(channel: channel, note: note.key, velocity: note.vel, destination: currentMidiDestinationEndpoint, timestamp: timestamp)
+            
+            // display log
+            let log = "dest: \(currentMidiDestinationEndpoint), time \(timestamp), ch: \(channel+1), note: \(note.key), vel: \(note.vel)"
+            self.delegate.loggingMIDISend(log: log)
         }
 
         // packetList send
