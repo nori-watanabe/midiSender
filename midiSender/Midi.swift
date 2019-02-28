@@ -84,15 +84,9 @@ class Midi: NSObject {
     }
     func scanDestinationEndpoint() {
         
-        // network session
-        
+        // network session .. sorry this app can not connect
         let networkid = MIDINetworkSession.default().destinationEndpoint()
-        let networkname = midiPropertyDisplayName(endpoint: networkid)
-        let newworkEndpoint = DestinationEndpoint()
-        newworkEndpoint.id = networkid
-        newworkEndpoint.name = networkname
-        destinationEndpoints.append(newworkEndpoint)
-        
+
         // device or app
         
         let endpointCount: Int = MIDIGetNumberOfDestinations()
