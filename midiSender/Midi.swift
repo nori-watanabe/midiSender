@@ -142,9 +142,9 @@ class Midi: NSObject {
         if currentNote > maxNote {
             currentNote = minNote
         }
-        
+
         let noteOff = MidiSeqData()
-        let prevKey = (currentNote == minNote) ? minNote : currentNote - 1
+        let prevKey = (currentNote == minNote) ? maxNote : currentNote - 1
         noteOff.key = prevKey
         noteOff.vel = 0
 
