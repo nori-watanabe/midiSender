@@ -23,8 +23,9 @@ class ViewController: UIViewController, MidiDelegate {
     func setNotificationObserver() {
         NotificationCenter.default.addObserver(
             self, selector: #selector(actionUpdateDestinationDeviceStatus), name: NSNotification.Name(rawValue: "updateDestinationDeviceStatus"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(notifChannelValueChanged), name: NSNotification.Name(rawValue: "channelValueCommited"), object: nil)
     }
-    @objc func actionSelectDestination(sender: UIButton) {
+    @objc func actionSelectDestination(sender: UICornerButton) {
         if midi.isPlaying == true && sender.backgroundColor == UIColor.darkGray {
             return
         }
@@ -32,6 +33,7 @@ class ViewController: UIViewController, MidiDelegate {
         midi.isPlaying = !midi.isPlaying
         if midi.isPlaying == true {
             midi.currentMidiDestinationEndpoint = midi.destinationEndpoints[sender.tag].id
+            midi.currentChannel = midi.destinationEndpoints[sender.tag].channel
             midi.sendBegan()
             sender.backgroundColor = UIColor.red
         }
@@ -52,15 +54,15 @@ class ViewController: UIViewController, MidiDelegate {
         midi.destinationEndpoints = []
         midi.scanDestinationEndpoint()
 
-        var tag: UInt32 = 0
-        if midi.isSeningContinues() == false {
+        var endpoint: UInt32 = 0
+        if midi.isSendingContinues() == false {
             midi.sendEnd()
             midi.isPlaying = false
         }
         else {
-            tag = midi.currentMidiDestinationEndpoint
+            endpoint = midi.currentMidiDestinationEndpoint
         }
-        setDestinationButtonItems(activeEndpoint: tag)
+        setDestinationButtonItems(activeEndpoint: endpoint)
     }
     func setControllButton() {
         let rescanButton = UICornerButton(frame: CGRect(x: 10, y: 44, width: 60, height: 40))
@@ -100,19 +102,34 @@ class ViewController: UIViewController, MidiDelegate {
         var i = 0
         for obj in midi.destinationEndpoints {
 
-            let button = UICornerButton(frame: CGRect(x: 10, y: 260 + CGFloat(i * 44), width: self.view.frame.width - 20, height: 40))
-            button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
-            button.setTitle(obj.name + "(\(obj.id))", for: .normal)
-            button.tag = i
-            button.backgroundColor = UIColor.darkGray
-            button.setTitleColor(UIColor.white, for: .normal)
-            button.addTarget(self, action: #selector(actionSelectDestination), for: .touchUpInside)
+            let sendButton = UICornerButton(frame: CGRect(x: 10, y: 260 + CGFloat(i * 44), width: self.view.frame.width - 20, height: 40))
+            sendButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+            sendButton.titleLabel?.textAlignment = .left
+            sendButton.setTitle("  \(obj.name) (\(obj.id))", for: .normal)
+            sendButton.tag = i // index
+            sendButton.id = obj.id // endpoint
+            sendButton.backgroundColor = UIColor.darkGray
+            sendButton.setTitleColor(UIColor.white, for: .normal)
+            sendButton.contentHorizontalAlignment = .left
+            sendButton.addTarget(self, action: #selector(actionSelectDestination), for: .touchUpInside)
             
             if obj.id == activeEndpoint {
-                button.backgroundColor = UIColor.red
+                sendButton.backgroundColor = UIColor.red
             }
-            
-            self.view.addSubview(button)
+            self.view.addSubview(sendButton)
+
+            let channelButton = UICornerButton(frame: CGRect(x: sendButton.frame.width - 50 - 5, y: 5, width: 50, height: sendButton.frame.height - 10))
+            channelButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+            if obj.id == activeEndpoint {
+                obj.channel = midi.currentChannel
+            }
+            channelButton.setTitle("Ch:\(obj.channel+1)", for: .normal)
+            channelButton.tag = i // index
+            channelButton.channel = Int(obj.channel)
+            channelButton.backgroundColor = UIColor.white
+            channelButton.setTitleColor(UIColor.black, for: .normal)
+            channelButton.addTarget(self, action: #selector(actionChannelChange), for: .touchUpInside)
+            sendButton.addSubview(channelButton)
             
             i += 1
         }
@@ -129,9 +146,59 @@ class ViewController: UIViewController, MidiDelegate {
         }
         logTextView.text = logs.joined(separator: "\n")
     }
+    @objc func actionChannelChange(sender: UICornerButton) {
+
+        let channelCollectionViewController = ParamChannelCollectionViewController()
+        channelCollectionViewController.modalPresentationStyle = .overFullScreen
+        
+        // param
+        let channelInfo = ParamInfo()
+        channelInfo.tag = sender.tag
+        channelInfo.channel = sender.channel + 1
+        channelCollectionViewController.channelInfo = channelInfo
+        channelCollectionViewController.selValue = channelInfo.channel
+        
+        self.present(channelCollectionViewController, animated: true, completion: nil)
+        channelCollectionViewController.paramLabel.text = "\(channelInfo.channel) ch"
+    }
+    @objc func notifChannelValueChanged(sender: Notification) {
+
+        let channelInfo = sender.object as! ParamInfo
+        //元のchannelボタンはtagでindexを送っているのでidを特定する
+        let id = midi.destinationEndpoints[channelInfo.tag].id
+
+        for view in self.view.subviews {
+            if let sendButton = view as? UICornerButton {
+                // sendButtonはidを持ってるので特定する
+                if sendButton.id == id {
+                    for button in sendButton.subviews {
+                        if let channelButton = button as? UICornerButton {
+                            
+                            channelButton.channel = channelInfo.channel - 1
+                            
+                            channelButton.setTitle("Ch:\(channelInfo.channel)", for: .normal)
+                            
+                            midi.destinationEndpoints[channelInfo.tag].channel = UInt8(channelButton.channel)
+                            
+                            if id == midi.currentMidiDestinationEndpoint {
+                                midi.currentChannel = UInt8(channelButton.channel)
+                            }
+
+                            break
+                        }
+                    }
+                    
+                    break
+                }
+            }
+        }
+
+    }
 }
 
-fileprivate class UICornerButton: UIButton {
+class UICornerButton: UIButton {
+    var id: UInt32 = 0
+    var channel: Int = 0
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.layer.cornerRadius = 5

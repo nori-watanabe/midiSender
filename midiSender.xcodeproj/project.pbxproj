@@ -13,6 +13,9 @@
 		8CA9A0EC2201A941003D7130 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8CA9A0EB2201A941003D7130 /* Assets.xcassets */; };
 		8CA9A0EF2201A941003D7130 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8CA9A0ED2201A941003D7130 /* LaunchScreen.storyboard */; };
 		8CAB17662205842900A527AF /* Midi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CAB17652205842900A527AF /* Midi.swift */; };
+		8CCCFA12223FB540002B9B25 /* ParamChannelCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CCCFA10223FB540002B9B25 /* ParamChannelCollectionViewController.swift */; };
+		8CCCFA13223FB540002B9B25 /* ParamChannelCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CCCFA11223FB540002B9B25 /* ParamChannelCell.swift */; };
+		8CCCFA15223FB572002B9B25 /* FNCParameterBaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CCCFA14223FB572002B9B25 /* FNCParameterBaseViewController.swift */; };
 		8CF405A922073A160071413F /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF405A822073A160071413F /* Sampler.swift */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +30,9 @@
 		8CA9A0EE2201A941003D7130 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8CA9A0F02201A941003D7130 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8CAB17652205842900A527AF /* Midi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Midi.swift; sourceTree = "<group>"; };
+		8CCCFA10223FB540002B9B25 /* ParamChannelCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParamChannelCollectionViewController.swift; sourceTree = "<group>"; };
+		8CCCFA11223FB540002B9B25 /* ParamChannelCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParamChannelCell.swift; sourceTree = "<group>"; };
+		8CCCFA14223FB572002B9B25 /* FNCParameterBaseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FNCParameterBaseViewController.swift; sourceTree = "<group>"; };
 		8CF405A822073A160071413F /* Sampler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sampler.swift; sourceTree = "<group>"; };
 		8CF405AA22073E660071413F /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -80,6 +86,9 @@
 				8CA9A0E62201A940003D7130 /* ViewController.swift */,
 				8CAB17652205842900A527AF /* Midi.swift */,
 				8CF405A822073A160071413F /* Sampler.swift */,
+				8CCCFA14223FB572002B9B25 /* FNCParameterBaseViewController.swift */,
+				8CCCFA10223FB540002B9B25 /* ParamChannelCollectionViewController.swift */,
+				8CCCFA11223FB540002B9B25 /* ParamChannelCell.swift */,
 			);
 			path = midiSender;
 			sourceTree = "<group>";
@@ -164,8 +173,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				8CA9A0E72201A940003D7130 /* ViewController.swift in Sources */,
+				8CCCFA15223FB572002B9B25 /* FNCParameterBaseViewController.swift in Sources */,
+				8CCCFA13223FB540002B9B25 /* ParamChannelCell.swift in Sources */,
 				8CAB17662205842900A527AF /* Midi.swift in Sources */,
 				8CF405A922073A160071413F /* Sampler.swift in Sources */,
+				8CCCFA12223FB540002B9B25 /* ParamChannelCollectionViewController.swift in Sources */,
 				8CA9A0E52201A940003D7130 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

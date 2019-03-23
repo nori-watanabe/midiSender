@@ -19,6 +19,7 @@ class Midi: NSObject {
     var midiClient = MIDIClientRef()
     var midiOutputPort = MIDIPortRef()
     var currentMidiDestinationEndpoint = MIDIEndpointRef()
+    var currentChannel: UInt8 = 0
     var destinationEndpoints: [DestinationEndpoint] = []
     var sourceEndpoint = MIDIEndpointRef()
     var isPlaying: Bool = false
@@ -31,6 +32,7 @@ class Midi: NSObject {
     class DestinationEndpoint {
         var id: UInt32 = 0
         var name: String = ""
+        var channel: UInt8 = 0
     }
     fileprivate class MidiSeqData {
         var key: UInt8 = 0
@@ -97,6 +99,7 @@ class Midi: NSObject {
                 let deviceEndpoint = DestinationEndpoint()
                 deviceEndpoint.id = endpointRef
                 deviceEndpoint.name = name
+                deviceEndpoint.channel = 0
                 destinationEndpoints.append(deviceEndpoint)
             }
         }
@@ -117,7 +120,7 @@ class Midi: NSObject {
             print("midiSender MIDIClientDispose \(err)")
         }
     }
-    func isSeningContinues() -> Bool {
+    func isSendingContinues() -> Bool {
         for destination in destinationEndpoints {
             if currentMidiDestinationEndpoint == destination.id {
                 return true
@@ -151,12 +154,10 @@ class Midi: NSObject {
         let noteOn = MidiSeqData()
         noteOn.key = currentNote
         noteOn.vel = 100
-
-        let channel: UInt8 = 0
         
-        midiSend(noteData: [noteOff, noteOn], channel: channel)
+        midiSend(noteData: [noteOff, noteOn])
     }
-    fileprivate func midiSend(noteData: [MidiSeqData], channel: UInt8) {
+    fileprivate func midiSend(noteData: [MidiSeqData]) {
         var err: OSStatus = 0
 
         // packetList initialize
@@ -172,7 +173,7 @@ class Midi: NSObject {
             let timestamp: MIDITimeStamp = mach_absolute_time()
             
             // channel, note, velocity
-            let packetData: [UInt8] = [0x90 + channel, note.key, note.vel]
+            let packetData: [UInt8] = [0x90 + currentChannel, note.key, note.vel]
             
             // packet add to packetList
             packet = MIDIPacketListAdd(
@@ -185,10 +186,10 @@ class Midi: NSObject {
             )
 
             // sampler
-            sampler.MIDISend(channel: channel, note: note.key, velocity: note.vel, destination: currentMidiDestinationEndpoint, timestamp: timestamp)
+            sampler.MIDISend(channel: currentChannel, note: note.key, velocity: note.vel, destination: currentMidiDestinationEndpoint, timestamp: timestamp)
             
             // display log
-            let log = "dest: \(currentMidiDestinationEndpoint), time \(timestamp), ch: \(channel+1), note: \(note.key), vel: \(note.vel)"
+            let log = "dest: \(currentMidiDestinationEndpoint), time \(timestamp), ch: \(currentChannel+1), note: \(note.key), vel: \(note.vel)"
             self.delegate.loggingMIDISend(log: log)
         }
 
