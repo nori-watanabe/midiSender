@@ -97,9 +97,11 @@ class FNCParameterBaseViewController: UIViewController, UIScrollViewDelegate {
         let mainViewHeight = mainView.frame.height
         var newY: CGFloat = 0
         let diff = windowHeight - mainViewHeight
-
         if diff > 0 {
             newY = diff / 2
+        }
+        else {
+            newY = mainView.frame.origin.y
         }
         mainView.frame.origin = CGPoint(x: mainView.frame.origin.x, y: newY)
     }

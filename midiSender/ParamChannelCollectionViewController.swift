@@ -29,7 +29,7 @@ class ParamChannelCollectionViewController: FNCParameterBaseViewController, UICo
         super.loadView()
 
         contentHeight = collectionWidth + contentMargin
-        mainViewY = 120
+        mainViewY = 220
     }
 
     override func viewDidLoad() {
