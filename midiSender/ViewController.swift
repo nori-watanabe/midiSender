@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  midiSender
 //
-//  Created by mbp on 2019/02/27.
+//  Created by mbp on 2019/04/13.
 //  Copyright © 2019 mbp. All rights reserved.
 //
 
@@ -35,7 +35,10 @@ class ViewController: UIViewController, MidiDelegate {
         
         midi.dispose()
     }
-    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+    }
+
     // button action
     
     @objc func actionRescan(sender: UICornerButton) {
@@ -64,8 +67,7 @@ class ViewController: UIViewController, MidiDelegate {
         
         let channelCollectionViewController = ParamChannelCollectionViewController()
         channelCollectionViewController.modalPresentationStyle = .overFullScreen
-        
-        // param
+
         let channelInfo = ParamInfo()
         channelInfo.tag = sender.tag
         channelInfo.channel = sender.channel + 1
@@ -95,7 +97,6 @@ class ViewController: UIViewController, MidiDelegate {
                         if let channelButton = button as? UICornerButton {
                             
                             channelButton.channel = channelInfo.channel - 1
-                            
                             channelButton.setTitle("Ch:\(channelInfo.channel)", for: .normal)
                             
                             midi.destinationEndpoints[channelInfo.tag].channel = UInt8(channelButton.channel)

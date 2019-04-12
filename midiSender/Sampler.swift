@@ -2,7 +2,7 @@
 //  Sampler
 //  midiSender
 //
-//  Created by mbp on 2019/02/27.
+//  Created by mbp on 2019/04/13.
 //  Copyright © 2019 mbp. All rights reserved.
 //
 
@@ -73,9 +73,7 @@ class Sampler: NSObject {
     func MIDISend(channel: UInt8, note: UInt8, velocity: UInt8, destination: UInt32, timestamp: UInt64) {
         //print("dest:\(destination), time:\(timestamp), ch:\(channel), note:\(note), vel:\(velocity)")
     }
-
     // AudioSession Interrupted
-    
     func setSamplerCondition(isStart: Bool) {
         var err: OSStatus = 0
         if isStart == true {

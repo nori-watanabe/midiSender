@@ -1,8 +1,8 @@
 //
 //  ParamChannelCell.swift
-//  Sampler
+//  midiSender
 //
-//  Created by mbp on 2019/03/12.
+//  Created by mbp on 2019/04/13.
 //  Copyright © 2019年 mbp. All rights reserved.
 //
 

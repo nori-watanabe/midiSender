@@ -1,8 +1,8 @@
 //
 //  ParamChannelCollectionViewController.swift
-//  Sampler
+//  midiSender
 //
-//  Created by mbp on 2019/03/12.
+//  Created by mbp on 2019/04/13.
 //  Copyright (c) 2019年 mbp. All rights reserved.
 //
 
@@ -19,7 +19,6 @@ class ParamChannelCollectionViewController: FNCParameterBaseViewController, UICo
 
     var channelCollectionView: UICollectionView!
     var channelInfo: ParamInfo!
-
     let channels: [Int] = Array(1...16)
     var selValue: Int = 1 // 1-16
     let collectionWidth: CGFloat = (44 + 8) * 4
@@ -31,7 +30,6 @@ class ParamChannelCollectionViewController: FNCParameterBaseViewController, UICo
         contentHeight = collectionWidth + contentMargin
         mainViewY = 220
     }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .thin)
@@ -42,8 +40,6 @@ class ParamChannelCollectionViewController: FNCParameterBaseViewController, UICo
         paramLabel.textColor = UIColor.white
         paramLabel.tag = 1001
         parambar.addSubview(paramLabel)
-        
-        // contents
         
         let flowLayout = UICollectionViewFlowLayout()
         flowLayout.scrollDirection = .vertical
@@ -115,7 +111,6 @@ class ParamChannelCollectionViewController: FNCParameterBaseViewController, UICo
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-    // section count
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
@@ -135,17 +130,14 @@ class ParamChannelCollectionViewController: FNCParameterBaseViewController, UICo
         cell.channelLabel.backgroundColor = UIColor.white
         cell.channelLabel.textColor = UIColor.black
     }
-    // get selected cell index
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         paramLabel.text = channels[indexPath.row].description + " ch"
         selValue = channels[indexPath.row]
         selectCell(indexPath)
     }
-    //cell count in a section
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return channels.count
     }
-    // cell set
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: ParamChannelCell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! ParamChannelCell
         cell.channelLabel.text = channels[(indexPath as NSIndexPath).row].description

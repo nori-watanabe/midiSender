@@ -1,8 +1,8 @@
 //
 //  FNCParameterView.swift
-//  Sampler
+//  midiSender
 //
-//  Created by mbp on 2019/03/12.
+//  Created by mbp on 2019/04/13.
 //  Copyright © 2019年 mbp. All rights reserved.
 //
 
@@ -13,7 +13,6 @@ class FNCParameterBaseViewController: UIViewController, UIScrollViewDelegate {
     internal var contentHeight: CGFloat = 0
     internal var mainViewY: CGFloat = 0
 
-//    var backgroundImageView: UIImageView!
     var mainView: UIView!
     var titlebar: UIView!
     var titleLabel: UILabel!
@@ -121,10 +120,8 @@ class FNCParameterBaseViewController: UIViewController, UIScrollViewDelegate {
         print("  deinit FNCParameterBaseViewController")
     }
     func titleAdjust() {
-        
         titleLabel.sizeToFit()
         titleLabel.center = mainView.convert(titlebar.center, to: titlebar)
-
     }
 }
 

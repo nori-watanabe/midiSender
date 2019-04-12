@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  midiSender
 //
-//  Created by mbp on 2019/02/27.
+//  Created by mbp on 2019/04/13.
 //  Copyright © 2019 mbp. All rights reserved.
 //
 
@@ -66,8 +66,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     print("AVAudioSession.InterruptionType.began")
                 }
                 if type.uintValue == AVAudioSession.InterruptionType.ended.rawValue {
-                    
-                    // AVAudioSession
+
                     setAVAudioSession()
                     
                     NotificationCenter.default.post(
