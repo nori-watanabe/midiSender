@@ -24,6 +24,23 @@ class ViewController: UIViewController, MidiDelegate {
         NotificationCenter.default.addObserver(
             self, selector: #selector(actionUpdateDestinationDeviceStatus), name: NSNotification.Name(rawValue: "updateDestinationDeviceStatus"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(notifChannelValueChanged), name: NSNotification.Name(rawValue: "channelValueCommited"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(notifSamplerStart), name: NSNotification.Name(rawValue: "samplerStart"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(notifSamplerStop), name: NSNotification.Name(rawValue: "samplerStop"), object: nil)
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "updateDestinationDeviceStatus"), object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "channelValueCommited"), object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "samplerStart"), object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "samplerStop"), object: nil)
+        
+        midi.dispose()
+    }
+    
+    // button action
+    
+    @objc func actionRescan(sender: UICornerButton) {
+        logTextView.text = ""
+        scan()
     }
     @objc func actionSelectDestination(sender: UICornerButton) {
         if midi.isPlaying == true && sender.backgroundColor == UIColor.darkGray {
@@ -43,13 +60,67 @@ class ViewController: UIViewController, MidiDelegate {
             midi.currentMidiDestinationEndpoint = 0
         }
     }
-    @objc func actionRescan(sender: UIButton) {
-        logTextView.text = ""
+    @objc func actionChannelChange(sender: UICornerButton) {
+        
+        let channelCollectionViewController = ParamChannelCollectionViewController()
+        channelCollectionViewController.modalPresentationStyle = .overFullScreen
+        
+        // param
+        let channelInfo = ParamInfo()
+        channelInfo.tag = sender.tag
+        channelInfo.channel = sender.channel + 1
+        channelCollectionViewController.channelInfo = channelInfo
+        channelCollectionViewController.selValue = channelInfo.channel
+        
+        self.present(channelCollectionViewController, animated: true, completion: nil)
+        channelCollectionViewController.paramLabel.text = "\(channelInfo.channel) ch"
+    }
+
+    // Notification action
+    
+    @objc func actionUpdateDestinationDeviceStatus(sender: Notification) {
         scan()
     }
-    @objc func actionUpdateDestinationDeviceStatus() {
-        scan()
+    @objc func notifChannelValueChanged(sender: Notification) {
+        
+        let channelInfo = sender.object as! ParamInfo
+        //元のchannelボタンはtagでindexを送っているのでidを特定する
+        let id = midi.destinationEndpoints[channelInfo.tag].id
+        
+        for view in self.view.subviews {
+            if let sendButton = view as? UICornerButton {
+                // sendButtonはidを持ってるので特定する
+                if sendButton.id == id {
+                    for button in sendButton.subviews {
+                        if let channelButton = button as? UICornerButton {
+                            
+                            channelButton.channel = channelInfo.channel - 1
+                            
+                            channelButton.setTitle("Ch:\(channelInfo.channel)", for: .normal)
+                            
+                            midi.destinationEndpoints[channelInfo.tag].channel = UInt8(channelButton.channel)
+                            
+                            if id == midi.currentMidiDestinationEndpoint {
+                                midi.currentChannel = UInt8(channelButton.channel)
+                            }
+                            
+                            break
+                        }
+                    }
+                    
+                    break
+                }
+            }
+        }
+        
     }
+    @objc func notifSamplerStart(sender: Notification) {
+        midi.sampler.setSamplerCondition(isStart: true)
+    }
+    @objc func notifSamplerStop(sender: Notification) {
+        midi.sampler.setSamplerCondition(isStart: false)
+    }
+
     func scan() {
         midi.destinationEndpoints = []
         midi.scanDestinationEndpoint()
@@ -145,54 +216,6 @@ class ViewController: UIViewController, MidiDelegate {
             }
         }
         logTextView.text = logs.joined(separator: "\n")
-    }
-    @objc func actionChannelChange(sender: UICornerButton) {
-
-        let channelCollectionViewController = ParamChannelCollectionViewController()
-        channelCollectionViewController.modalPresentationStyle = .overFullScreen
-        
-        // param
-        let channelInfo = ParamInfo()
-        channelInfo.tag = sender.tag
-        channelInfo.channel = sender.channel + 1
-        channelCollectionViewController.channelInfo = channelInfo
-        channelCollectionViewController.selValue = channelInfo.channel
-        
-        self.present(channelCollectionViewController, animated: true, completion: nil)
-        channelCollectionViewController.paramLabel.text = "\(channelInfo.channel) ch"
-    }
-    @objc func notifChannelValueChanged(sender: Notification) {
-
-        let channelInfo = sender.object as! ParamInfo
-        //元のchannelボタンはtagでindexを送っているのでidを特定する
-        let id = midi.destinationEndpoints[channelInfo.tag].id
-
-        for view in self.view.subviews {
-            if let sendButton = view as? UICornerButton {
-                // sendButtonはidを持ってるので特定する
-                if sendButton.id == id {
-                    for button in sendButton.subviews {
-                        if let channelButton = button as? UICornerButton {
-                            
-                            channelButton.channel = channelInfo.channel - 1
-                            
-                            channelButton.setTitle("Ch:\(channelInfo.channel)", for: .normal)
-                            
-                            midi.destinationEndpoints[channelInfo.tag].channel = UInt8(channelButton.channel)
-                            
-                            if id == midi.currentMidiDestinationEndpoint {
-                                midi.currentChannel = UInt8(channelButton.channel)
-                            }
-
-                            break
-                        }
-                    }
-                    
-                    break
-                }
-            }
-        }
-
     }
 }
 

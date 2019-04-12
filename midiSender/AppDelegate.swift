@@ -17,10 +17,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         // AVAudioSession
-
-        let session = AVAudioSession.init()
-        try! session.setCategory(.playback, mode: .default, policy: .default, options: .mixWithOthers)
-        try! session.setActive(true, options: .notifyOthersOnDeactivation)
+        
+        setAVAudioSession()
+        
+        // AVAudioSession interruption
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(notifAudioSessionInterrupted), name:  AVAudioSession.interruptionNotification, object: nil)
 
         return true
     }
@@ -45,5 +47,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
+    }
+
+    @objc func notifAudioSessionInterrupted(sender: Notification) {
+        print("notifAudioSessionInterrupted")
+        if let userInfos = sender.userInfo {
+            let type: AnyObject = userInfos["AVAudioSessionInterruptionTypeKey"] as AnyObject
+            if type is NSNumber {
+                if type.uintValue == AVAudioSession.InterruptionType.began.rawValue {
+                    
+                    NotificationCenter.default.post(
+                        name: Notification.Name(rawValue: "samplerStop"),
+                        object: nil
+                    )
+
+                    print("AVAudioSession.InterruptionType.began")
+                }
+                if type.uintValue == AVAudioSession.InterruptionType.ended.rawValue {
+                    
+                    // AVAudioSession
+                    setAVAudioSession()
+                    
+                    NotificationCenter.default.post(
+                        name: Notification.Name(rawValue: "samplerStart"),
+                        object: nil
+                    )
+
+                    print("AVAudioSession.InterruptionType.ended")
+                }
+            }
+        }
+    }
+
+    private func setAVAudioSession() {
+        let session = AVAudioSession.init()
+        try! session.setCategory(.playback, mode: .default, policy: .default, options: .mixWithOthers)
+        try! session.setActive(true, options: .notifyOthersOnDeactivation)
     }
 }
