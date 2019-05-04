@@ -136,6 +136,12 @@ class Midi: NSObject {
     }
     func sendEnd() {
         self.timer.invalidate()
+        
+        let noteOff = MidiSeqData()
+        noteOff.key = currentNote
+        noteOff.vel = 0
+        
+        midiSend(noteData: [noteOff])
     }
     @objc func timerFired() {
         
